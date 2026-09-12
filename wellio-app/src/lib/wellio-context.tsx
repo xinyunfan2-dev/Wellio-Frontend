@@ -22,7 +22,7 @@ function validReadiness(snapshot:Snapshot){
  return r.source==='mock_watch'&&r.quality==='valid'&&r.dayKey===snapshot.dayKey&&Boolean(r.id)&&Number.isFinite(r.version)
   &&r.score!==null&&Number.isFinite(r.score)&&r.scoreScale>0&&r.score>=0&&r.score<=r.scoreScale&&Number.isFinite(Date.parse(r.observedAt))
 }
-// A cancelled stream must release its UI reservation even if its transport settles late.
+// Cancel reconciliation reads promptly; agent streams separately await SDK cleanup.
 function abortable<T>(work:Promise<T>,signal:AbortSignal):Promise<T>{
  return new Promise((resolve,reject)=>{
   const aborted=()=>reject(new DOMException('Aborted','AbortError'))
@@ -156,7 +156,7 @@ export function WellioProvider({children}:{children:ReactNode}){
   if(run.source==='app_open'){setReadinessBusy(true);setReadinessError(null)}else setError(null)
   const work=(async()=>{
    try{
-    await abortable(api.chat(request,receive,run.controller.signal),run.controller.signal)
+    await api.chat(request,receive,run.controller.signal)
     if(run.controller.signal.aborted)throw new DOMException('Aborted','AbortError')
     if(activeRun.current!==run||!sameSession(current.current,run))throw new ApiError('SESSION_RESET')
     if(run.source==='user'){

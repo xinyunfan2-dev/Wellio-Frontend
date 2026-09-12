@@ -10,7 +10,7 @@ async function showToday(page: Page, initial: Snapshot, locale: Locale = 'en', r
   await page.setViewportSize({width: 390, height: 790})
   await page.addInitScript(value => localStorage.setItem('wellio.locale.v1', value), locale)
   await page.route('**/api/state', route => route.fulfill({json: state}))
-  await page.route('**/api/actions', async route => {
+  await page.route(/\/api\/(?:actions|copilotkit\/proposal)$/,  async route => {
     const request = route.request().postDataJSON() as ActionRequest
     actions.push(request)
     await route.fulfill({json: {status: 'succeeded', requestId: request.requestId, snapshot: state, ...reply?.(request, state)}})

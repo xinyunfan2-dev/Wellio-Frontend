@@ -20,13 +20,13 @@ PR 写清楚问题、最终行为与检查结果。UI 改动附中英文截图�
 | --- | --- |
 | `GET /api/state` | 读取共享状态 |
 | `POST /api/actions` | 显式业务操作与保存回执 |
-| `POST /api/chat` | Agent 流式对话 |
+| `/api/copilotkit/*` | CopilotKit SDK 对话、停止与提案生成 |
 | `POST /api/attachments` | 上传图片 |
 | `GET /api/attachments/:attachmentId` | 读取会话图片 |
 
 请求、快照和事件以 `wellio-app/src/lib/contracts.ts` 为准，保留 camelCase 字段、会话 cookie、版本与操作去重语义。Python 的内部命名不应直接改变前端契约。
 
-`src/server` 是目前可运行的兼容实现。FastAPI 迁移合入时，请一起更新 API 代理、启动方式、环境示例与 README，并跑原有接口和浏览器测试。Agent 框架迁移单独提交。
+`src/server` 仅负责 FastAPI 与 CopilotKit 同源代理。领域逻辑与 Node Agent 在独立后端仓库维护，不在前端实现第二套业务或 Agent。接口变更同步代理、契约和回归测试。
 
 Today 与 Agent 共用方案和状态。候选方案必须经明确确认才应用；休息确认不开始训练。模型未配置、失败或断开时显示真实状态，不填充伪造结果。
 
@@ -38,4 +38,4 @@ Today 与 Agent 共用方案和状态。候选方案必须经明确确认才应�
 
 ## 提交范围
 
-`.env.example` 只保留空配置或示例。不要提交 `.env`、真实凭据、SQLite 数据、上传目录、测试运行产物或 `node_modules`。
+`.env.example` 只保留空配置或示例。不要提交 `.env`、真实凭据、数据库文件、上传目录、测试运行产物或 `node_modules`。

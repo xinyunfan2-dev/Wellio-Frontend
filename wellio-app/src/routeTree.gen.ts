@@ -20,6 +20,7 @@ import { Route as ApiAttachmentsRouteImport } from './routes/api.attachments'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as ApiStateRouteImport } from './routes/api.state'
 import { Route as ApiAttachmentsAttachmentIdRouteImport } from './routes/api.attachments.$attachmentId'
+import { Route as ApiCopilotkitSplatRouteImport } from './routes/api.copilotkit.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -77,6 +78,11 @@ const ApiAttachmentsAttachmentIdRoute =
     path: '/$attachmentId',
     getParentRoute: () => ApiAttachmentsRoute,
   } as any)
+const ApiCopilotkitSplatRoute = ApiCopilotkitSplatRouteImport.update({
+  id: '/api/copilotkit/$',
+  path: '/api/copilotkit/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/state': typeof ApiStateRoute
   '/api/attachments/$attachmentId': typeof ApiAttachmentsAttachmentIdRoute
+  '/api/copilotkit/$': typeof ApiCopilotkitSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/state': typeof ApiStateRoute
   '/api/attachments/$attachmentId': typeof ApiAttachmentsAttachmentIdRoute
+  '/api/copilotkit/$': typeof ApiCopilotkitSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/state': typeof ApiStateRoute
   '/api/attachments/$attachmentId': typeof ApiAttachmentsAttachmentIdRoute
+  '/api/copilotkit/$': typeof ApiCopilotkitSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/state'
     | '/api/attachments/$attachmentId'
+    | '/api/copilotkit/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/state'
     | '/api/attachments/$attachmentId'
+    | '/api/copilotkit/$'
   id:
     | '__root__'
     | '/'
@@ -158,6 +169,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/state'
     | '/api/attachments/$attachmentId'
+    | '/api/copilotkit/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,6 +183,7 @@ export interface RootRouteChildren {
   ApiAttachmentsRoute: typeof ApiAttachmentsRouteWithChildren
   ApiChatRoute: typeof ApiChatRoute
   ApiStateRoute: typeof ApiStateRoute
+  ApiCopilotkitSplatRoute: typeof ApiCopilotkitSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAttachmentsAttachmentIdRouteImport
       parentRoute: typeof ApiAttachmentsRoute
     }
+    '/api/copilotkit/$': {
+      id: '/api/copilotkit/$'
+      path: '/api/copilotkit/$'
+      fullPath: '/api/copilotkit/$'
+      preLoaderRoute: typeof ApiCopilotkitSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -278,6 +298,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAttachmentsRoute: ApiAttachmentsRouteWithChildren,
   ApiChatRoute: ApiChatRoute,
   ApiStateRoute: ApiStateRoute,
+  ApiCopilotkitSplatRoute: ApiCopilotkitSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

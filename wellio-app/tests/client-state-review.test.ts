@@ -1,11 +1,9 @@
+import {storage} from './helpers/backend'
+import {aguiResponse,installTestTransport} from './helpers/copilot'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { mkdtempSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import type { ReactElement } from 'react'
 import type { ActionRequest, ActionResult, ChatEvent, ChatRequest, Locale, Message, Snapshot } from '../src/lib/contracts'
 import { createFixture } from '../src/lib/fixtures'
-import { createBackend } from '../src/server/app'
 
 // This is a narrow asynchronous-state harness: the real provider handlers run,
 // while hook cells are retained between explicit renders. No UI is simulated.
@@ -48,25 +46,26 @@ function message(id: string): Message {
 }
 const request: ChatRequest = { requestId: 'request-current', resetEpoch: 1, conversationId: 'preview-conversation', message: 'Log this meal', locale: 'en', attachmentIds: ['image-1'], source: 'user' }
 
-beforeEach(() => { hooks.cells = []; hooks.cursor = 0; hooks.locale = 'en' })
-afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals() })
+let uninstall:()=>Promise<void>
+beforeEach(() => { uninstall=installTestTransport(); hooks.cells = []; hooks.cursor = 0; hooks.locale = 'en' })
+afterEach(async () => { await uninstall();vi.restoreAllMocks(); vi.unstubAllGlobals() })
 
 describe('Client transport review: success must be explicit', () => {
   it('rejects an empty HTTP 200 stream instead of reporting chat success', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('')))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('',{headers:{'Content-Type':'text/event-stream'}})))
     await expect(api.chat(request, vi.fn(), new AbortController().signal)).rejects.toThrow()
   })
 
   it('rejects a truncated stream that has no terminal done event', async () => {
     const event: ChatEvent = { type: 'message', requestId: request.requestId, resetEpoch: 1, message: message('partial') }
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(event) + '\n')))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(aguiResponse([event],request)))
     const onEvent = vi.fn()
     await expect(api.chat(request, onEvent, new AbortController().signal)).rejects.toThrow()
   })
 
   it('delivers a server error to the UI and rejects the chat promise', async () => {
     const event: ChatEvent = { type: 'error', requestId: request.requestId, resetEpoch: 1, errorCode: 'PROVIDER_ERROR' }
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(event) + '\n')))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(aguiResponse([event],request)))
     const onEvent = vi.fn()
     await expect(api.chat(request, onEvent, new AbortController().signal)).rejects.toBeInstanceOf(ApiError)
     expect(onEvent).toHaveBeenCalledWith(event)
@@ -74,8 +73,8 @@ describe('Client transport review: success must be explicit', () => {
 
   it('completes only a stream with a terminal event for this request and reset epoch', async () => {
     const done: ChatEvent = { type: 'done', requestId: request.requestId, resetEpoch: request.resetEpoch, messageId: 'complete-reply' }
-    const fetch = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(done) + '\n'))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ ...done, requestId: 'foreign-request' }) + '\n'))
+    const fetch = vi.fn().mockResolvedValueOnce(aguiResponse([done],request))
+      .mockResolvedValueOnce(aguiResponse([{...done,requestId:'foreign-request'}],request))
     vi.stubGlobal('fetch', fetch)
     await expect(api.chat(request, vi.fn(), new AbortController().signal)).resolves.toBeUndefined()
     await expect(api.chat(request, vi.fn(), new AbortController().signal)).rejects.toThrow('STREAM_PROTOCOL_ERROR')
@@ -89,14 +88,14 @@ describe('Client provider review: concurrent and cancelled work', () => {
     const saved = { ...seed, revision: 2, messages: [savedMessage] }
     vi.spyOn(api, 'getSnapshot').mockResolvedValue(seed)
     vi.stubGlobal('fetch', vi.fn(async (_url: string, init: RequestInit) => {
-      const submitted = JSON.parse(init.body as string) as ChatRequest
+      const submitted = JSON.parse(init.body as string).forwardedProps.wellio as ChatRequest
       const envelope = { requestId: submitted.requestId, resetEpoch: submitted.resetEpoch }
       const events: ChatEvent[] = [
         { type: 'message', ...envelope, message: message('saved-reply') },
         { type: 'snapshot', ...envelope, snapshot: saved },
         { type: 'error', ...envelope, messageId: savedMessage.id, errorCode: status === 'stopped' ? 'RUN_STOPPED' : 'PROVIDER_ERROR' },
       ]
-      return new Response(events.map(event => JSON.stringify(event)).join('\n') + '\n')
+      return aguiResponse(events,submitted)
     }))
     let value = render(); await value.refresh(); value.setDraft('Keep my unsent correction'); value = render()
     await expect(value.sendMessage(value.draft)).rejects.toBeInstanceOf(ApiError)
@@ -126,7 +125,7 @@ describe('Client provider review: concurrent and cancelled work', () => {
     saved.readinessCheck = { key: 'server-check', status: 'idle' }
     vi.spyOn(api, 'getSnapshot').mockImplementation(async () => saved)
     vi.stubGlobal('fetch', vi.fn(async (_url: string, init: RequestInit) => {
-      const submitted = JSON.parse(init.body as string) as ChatRequest
+      const submitted = JSON.parse(init.body as string).forwardedProps.wellio as ChatRequest
       const envelope = { requestId: submitted.requestId, resetEpoch: submitted.resetEpoch }
       const reply: Message = { ...message('check-reply'), source: 'app_open', status: 'complete', phase: undefined, proposalId: 'check-proposal' }
       saved = {
@@ -140,7 +139,7 @@ describe('Client provider review: concurrent and cancelled work', () => {
         { type: 'snapshot', ...envelope, snapshot: saved },
         { type: 'done', ...envelope, messageId: reply.id },
       ]
-      return new Response(events.map(event => JSON.stringify(event)).join('\n') + '\n')
+      return aguiResponse(events,submitted)
     }))
     let value = render(); value.setDraft('My next question'); value.setChatTarget({ mealId: 'meal-lunch' }); value = render()
     await value.checkReadiness()
@@ -262,28 +261,6 @@ describe('Client provider review: concurrent and cancelled work', () => {
 })
 
 describe('Client action recovery against persistent storage', () => {
-  async function storage() {
-    const directory = mkdtempSync(join(tmpdir(), 'wellio-client-recovery-'))
-    const backend = createBackend({ databasePath: join(directory, 'state.sqlite'), cookieSecure: false })
-    const response = await backend.handleRequest(new Request('http://localhost/api/state'))
-    const cookie = response.headers.get('set-cookie')!.split(';')[0]
-    const seed = await response.json() as Snapshot
-    return {
-      seed,
-      async state(): Promise<Snapshot> {
-        return await (await backend.handleRequest(new Request('http://localhost/api/state', { headers: { cookie } }))).json() as Snapshot
-      },
-      async action(request: ActionRequest): Promise<ActionResult> {
-        const response = await backend.handleRequest(new Request('http://localhost/api/actions', {
-          method: 'POST', headers: { cookie, 'content-type': 'application/json' }, body: JSON.stringify(request),
-        }))
-        expect(response.status).toBe(200)
-        return await response.json() as ActionResult
-      },
-      close() { backend.close(); rmSync(directory, { recursive: true, force: true }) },
-    }
-  }
-
   it('reuses the uncertain request ID after a lost response and stale read, committing only once', async () => {
     const server = await storage()
     try {
@@ -309,7 +286,7 @@ describe('Client action recovery against persistent storage', () => {
       expect(saved.locale).toBe('zh-CN')
       expect(saved.revision).toBe(server.seed.revision + 1)
       expect(render().snapshot).toEqual(saved)
-    } finally { server.close() }
+    } finally { await server.close() }
   })
 
   it('does not replay an old request after reconciliation observes a new reset epoch', async () => {
@@ -337,6 +314,6 @@ describe('Client action recovery against persistent storage', () => {
       expect(submitted[1].requestId).not.toBe(submitted[0].requestId)
       expect(submitted.map(item => item.resetEpoch)).toEqual([server.seed.resetEpoch, server.seed.resetEpoch + 1])
       expect((await server.state()).resetEpoch).toBe(server.seed.resetEpoch + 1)
-    } finally { server.close() }
+    } finally { await server.close() }
   })
 })

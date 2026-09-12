@@ -16,14 +16,14 @@ async function controlledStream(page:Page,initial:Snapshot){
   res.setHeader('Access-Control-Allow-Headers','content-type')
   if(req.method==='OPTIONS'){res.writeHead(204);res.end();return}
   const chunks:Buffer[]=[];for await(const chunk of req)chunks.push(Buffer.from(chunk))
-  const body=JSON.parse(Buffer.concat(chunks).toString()) as ChatRequest
-  res.writeHead(200,{'Content-Type':'application/x-ndjson','Cache-Control':'no-cache'});res.flushHeaders()
-  response=res;acceptRequest(body)
+  const body=JSON.parse(Buffer.concat(chunks).toString()) .forwardedProps.wellio as ChatRequest
+  res.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache'});res.flushHeaders()
+  res.write('data: '+JSON.stringify({type:'RUN_STARTED',runId:body.requestId,threadId:body.conversationId})+'\n\n');response=res;acceptRequest(body)
  })
  await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve))
  const address=server.address();if(!address||typeof address==='string')throw new Error('Missing streaming test address')
  await page.route('**/api/state',route=>{stateReads++;return route.fulfill({json:state})})
- await page.route('**/api/chat',route=>route.continue({url:`http://127.0.0.1:${address.port}/chat`}))
+ await page.route('**/api/copilotkit/agent/wellio/run',route=>route.continue({url:`http://127.0.0.1:${address.port}/chat`}))
  await page.route('**/api/actions',route=>{
   const request=route.request().postDataJSON()
   expect(request.kind).toBe('undo_meal')
@@ -32,8 +32,8 @@ async function controlledStream(page:Page,initial:Snapshot){
  })
  return {
   request,reads:()=>stateReads,
-  async send(event:Payload){const identity=await request;response!.write(JSON.stringify({...event,requestId:identity.requestId,resetEpoch:identity.resetEpoch})+'\n')},
-  async finish(next:Snapshot,messageId:string){state=structuredClone(next);const identity=await request;response!.end(JSON.stringify({type:'done',messageId,requestId:identity.requestId,resetEpoch:identity.resetEpoch})+'\n')},
+  async send(event:Payload){const identity=await request;response!.write('data: '+JSON.stringify({type:'CUSTOM',name:'wellio',value:{...event,requestId:identity.requestId,resetEpoch:identity.resetEpoch}})+'\n\n')},
+  async finish(next:Snapshot,messageId:string){state=structuredClone(next);const identity=await request;response!.end('data: '+JSON.stringify({type:'CUSTOM',name:'wellio',value:{type:'done',messageId,requestId:identity.requestId,resetEpoch:identity.resetEpoch}})+'\n\ndata: '+JSON.stringify({type:'RUN_FINISHED',runId:identity.requestId,threadId:identity.conversationId})+'\n\n')},
   async close(){response?.destroy();server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()))},
  }
 }
@@ -53,7 +53,7 @@ async function expectLayout(page:Page){
  expect(await page.locator('.app-main').evaluate(el=>el.scrollTop)).toBe(0)
 }
 
-for(const locale of ['en','zh-CN'] as const)test(`390px ${locale}: NDJSON follows bottom, preserves history reading and retains final tool metadata`,async({page})=>{
+for(const locale of ['en','zh-CN'] as const)test(`390px ${locale}: CopilotKit SSE follows bottom, preserves history reading and retains final tool metadata`,async({page})=>{
  await page.setViewportSize({width:390,height:700})
  await page.addInitScript(value=>localStorage.setItem('wellio.locale.v1',value),locale)
  const en=locale==='en',state=history(locale),stream=await controlledStream(page,state),errors:string[]=[]

@@ -1,3 +1,4 @@
+import {aguiResponse,installTestTransport} from './helpers/copilot'
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest'
 import type {ReactElement} from 'react'
 import type {ChatEvent,ChatRequest,Locale,Message,Snapshot} from '../src/lib/contracts'
@@ -22,12 +23,14 @@ const flush=async()=>{for(let i=0;i<30;i++)await Promise.resolve()}
 let documentState:EventTarget&{visibilityState:string}
 function foreground(){documentState.visibilityState='visible';documentState.dispatchEvent(new Event('visibilitychange'))}
 function mount(){const value=render();hooks.cleanup=hooks.effect?.()||undefined;return value}
+let uninstall:()=>Promise<void>
 beforeEach(()=>{
+ uninstall=installTestTransport()
  hooks.cells=[];hooks.cursor=0;hooks.locale='en';hooks.effect=undefined;hooks.cleanup=undefined
  documentState=Object.assign(new EventTarget(),{visibilityState:'visible'})
  vi.stubGlobal('document',documentState)
 })
-afterEach(async()=>{hooks.cleanup?.();await flush();vi.restoreAllMocks();vi.unstubAllGlobals()})
+afterEach(async()=>{hooks.cleanup?.();await uninstall();await flush();vi.restoreAllMocks();vi.unstubAllGlobals()})
 
 describe('Readiness automatic trigger',()=>{
  it.each(['no-model','no-ledger','invalid-readiness'] as const)('does not call the model for %s',async reason=>{
@@ -114,8 +117,10 @@ describe('Readiness and explicit user work',()=>{
   let value=render();value.setDraft('Log this photo');value.setChatTarget({mealId:'meal-lunch'});value=render()
   const sending=value.sendMessage('Log this photo',[{id:'image-1',url:'/meal.png',name:'meal.png',mediaType:'image/png',purpose:'food'}])
   await flush()
-  expect(chat).toHaveBeenCalledTimes(2)
+  expect(chat).toHaveBeenCalledTimes(1)
   expect(chat.mock.calls[0][2].aborted).toBe(true)
+  automatic.reject(new DOMException('Aborted','AbortError'));await flush()
+  expect(chat).toHaveBeenCalledTimes(2)
   expect(chat.mock.calls[1][0]).toMatchObject({source:'user',attachmentIds:['image-1'],targetMealId:'meal-lunch'})
   expect(render().draft).toBe('Log this photo');expect(render().readinessBusy).toBe(false);expect(render().chatBusy).toBe(true)
   oldEmit({type:'message',requestId:chat.mock.calls[0][0].requestId,resetEpoch:1,message:message('late-auto')})
@@ -130,8 +135,11 @@ describe('Readiness and explicit user work',()=>{
   const chat=vi.spyOn(api,'chat').mockReturnValue(automatic.promise)
   const action=vi.spyOn(api,'action').mockImplementation(async request=>{order.push('start');saved={...saved,revision:2,workout:{...saved.workout!,status:'in_progress'}};return {requestId:request.requestId,status:'succeeded',snapshot:saved}})
   mount();await flush();order.length=0
-  const result=await render().runAction({kind:'start_workout',workoutId:saved.workout!.id,expectedWorkoutVersion:1})
-  expect(chat.mock.calls[0][2].aborted).toBe(true)
+  const pending=render().runAction({kind:'start_workout',workoutId:saved.workout!.id,expectedWorkoutVersion:1})
+  await flush();expect(chat.mock.calls[0][2].aborted).toBe(true)
+  expect(action).not.toHaveBeenCalled()
+  automatic.reject(new DOMException('Aborted','AbortError'))
+  const result=await pending
   expect(order).toEqual(['read','start'])
   expect(action).toHaveBeenCalledTimes(1);expect(result?.snapshot?.workout?.status).toBe('in_progress')
  })
@@ -191,7 +199,9 @@ describe('Readiness and explicit user work',()=>{
   mount();await flush()
   let value=render();value.setDraft('Keep this question');value=render()
   const sending=value.sendMessage('Keep this question').catch(error=>error)
-  await flush();expect(read).toHaveBeenCalledTimes(2)
+  await flush();expect(read).toHaveBeenCalledTimes(1)
+  automatic.reject(new DOMException('Aborted','AbortError'));await flush()
+  expect(read).toHaveBeenCalledTimes(2)
   render().stopChat();await flush()
   expect((await sending).name).toBe('AbortError')
   reconciliation.resolve(s);await flush()
@@ -205,7 +215,7 @@ describe('Readiness and explicit user work',()=>{
   vi.spyOn(api,'getSnapshot').mockResolvedValue(s)
   vi.spyOn(api,'chat').mockReturnValue(running.promise)
   const checking=render().checkReadiness({mode:'retry'}).catch(error=>error)
-  await flush();render().stopChat();await checking
+  await flush();render().stopChat();running.reject(new DOMException('Aborted','AbortError'));await checking
   expect(render().readinessError).toBeNull()
   expect(render().readinessBusy).toBe(false)
  })
@@ -221,7 +231,7 @@ describe('Readiness and explicit user work',()=>{
 
 describe('Readiness network completion',()=>{
  const request:ChatRequest={requestId:'run-check',resetEpoch:1,conversationId:'conversation',message:'',attachmentIds:[],source:'app_open',checkMode:'auto',locale:'en'}
- function response(){const snapshot:ChatEvent={type:'snapshot',requestId:request.requestId,resetEpoch:1,snapshot:{...ready(),readinessCheck:{key:'check-1',status:'completed'}}};const result:ChatEvent={type:'check_result',requestId:request.requestId,resetEpoch:1,checkKey:'check-1',outcome:'reused'};return new Response([snapshot,result].map(event=>JSON.stringify(event)).join('\n')+'\n')}
+ function response(){const snapshot:ChatEvent={type:'snapshot',requestId:request.requestId,resetEpoch:1,snapshot:{...ready(),conversationId:request.conversationId,readinessCheck:{key:'check-1',status:'completed'}}};const result:ChatEvent={type:'check_result',requestId:request.requestId,resetEpoch:1,checkKey:'check-1',outcome:'reused'};return aguiResponse([snapshot,result],request)}
  it('accepts a checked snapshot and app_open control result without inventing a message',async()=>{
   vi.stubGlobal('fetch',vi.fn().mockResolvedValue(response()))
   const emit=vi.fn();await expect(api.chat(request,emit,new AbortController().signal)).resolves.toBeUndefined()
@@ -232,7 +242,7 @@ describe('Readiness network completion',()=>{
   await expect(api.chat({...request,source:'user',message:'hello',checkMode:undefined},vi.fn(),new AbortController().signal)).rejects.toThrow('STREAM_PROTOCOL_ERROR')
  })
  it('rejects a control result without its authoritative matching snapshot',async()=>{
-  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify({type:'check_result',requestId:request.requestId,resetEpoch:1,checkKey:'check-1',outcome:'reused'})+'\n')))
+  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(aguiResponse([{type:'check_result',requestId:request.requestId,resetEpoch:1,checkKey:'check-1',outcome:'reused'}],request)))
   await expect(api.chat(request,vi.fn(),new AbortController().signal)).rejects.toThrow('STREAM_PROTOCOL_ERROR')
  })
 })

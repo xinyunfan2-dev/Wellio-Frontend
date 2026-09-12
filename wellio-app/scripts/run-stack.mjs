@@ -1,5 +1,6 @@
-/** Start and stop the frontend, native FastAPI API, and optional legacy Agent together. */
+/** Run the frontend, FastAPI and CopilotKit service against a configured PostgreSQL. */
 import { spawn } from 'node:child_process'
+import { randomBytes } from 'node:crypto'
 import { createServer } from 'node:net'
 import { resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
@@ -43,10 +44,13 @@ async function ready(url, headers) {
 try {
   const port = process.env.PORT || process.env.NITRO_PORT || '3100'
   const apiPort = await freePort()
+  const agentPort = await freePort()
   if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL_REQUIRED: PostgreSQL must be configured before starting the stack')
-  const env = { ...process.env, PORT: port, NITRO_PORT: port, HOST: process.env.HOST || '127.0.0.1', WELLIO_API_BASE_URL: `http://127.0.0.1:${apiPort}`, WELLIO_PUBLIC_ORIGIN: process.env.WELLIO_PUBLIC_ORIGIN || `http://127.0.0.1:${port},http://localhost:${port}` }
+  const env = { ...process.env, PORT: port, NITRO_PORT: port, HOST: process.env.HOST || '127.0.0.1', WELLIO_API_BASE_URL: `http://127.0.0.1:${apiPort}`, WELLIO_AGENT_BASE_URL: `http://127.0.0.1:${agentPort}`, WELLIO_AGENT_PORT: String(agentPort), WELLIO_AGENT_TOKEN: process.env.WELLIO_AGENT_TOKEN || randomBytes(32).toString('hex'), COPILOTKIT_TELEMETRY_DISABLED: 'true', WELLIO_PUBLIC_ORIGIN: process.env.WELLIO_PUBLIC_ORIGIN || `http://127.0.0.1:${port},http://localhost:${port}` }
   launch('uv', ['run', '--frozen', '--project', backendDirectory, 'uvicorn', 'wellio.main:application', '--factory', '--host', '127.0.0.1', '--port', String(apiPort), '--no-proxy-headers'], env, backendDirectory)
   await ready(env.WELLIO_API_BASE_URL + '/healthz')
+  launch(process.execPath, ['dist/server.js'], env, resolve(backendDirectory, 'agent-runtime'))
+  await ready(env.WELLIO_AGENT_BASE_URL + '/healthz')
   launch(process.execPath, mode === 'dev' ? ['node_modules/vite/bin/vite.js', '--host', env.HOST, '--port', port, '--strictPort'] : ['.output/server/index.mjs'], env)
-  console.log(`[wellio] FastAPI ready; frontend http://127.0.0.1:${port}`)
+  console.log(`[wellio] FastAPI and CopilotKit ready; frontend http://127.0.0.1:${port}`)
 } catch (error) { console.error(`[wellio] ${error.message}`); await stop(1) }

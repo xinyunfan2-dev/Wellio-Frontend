@@ -1,19 +1,19 @@
 # Wellio frontend
 
-TanStack Start + React + TypeScript，沿用已确认的 Wellio B 视觉系统。
+TanStack Start + React + TypeScript，保留现有 Wellio 界面。
 
-前端仓库：[Wellio](https://github.com/xinyunfan2-dev/Wellio)。后端独立仓库：[Wellio-Backend](https://github.com/xinyunfan2-dev/Wellio-Backend)，采用 **FastAPI + PostgreSQL + Exa**。两个仓库通过 HTTP 契约协作，不需要合并源码。
+前端仓库：[Wellio-Frontend](https://github.com/xinyunfan2-dev/Wellio-Frontend)。业务与 Agent 服务位于独立[后端仓库](https://github.com/xinyunfan2-dev/Wellio-Backend)：FastAPI + PostgreSQL + Exa，以及 CopilotKit BuiltInAgent Node 子包。
 
-## 启动
+## 开发与运行
 
-要求 Node >=22.13。先按照后端仓库 README 启动 FastAPI（默认 `127.0.0.1:8000`），再运行：
+要求 Node >=22.15、npm >=11。macOS Apple Silicon 为演示目标。先按后端 README 启动 PostgreSQL、FastAPI 和 Node Agent，再运行：
 
 ```sh
 npm ci
 npm run dev
 ```
 
-打开 `http://127.0.0.1:3100`。生产构建：
+浏览器打开 `http://127.0.0.1:3100`。构建并运行：
 
 ```sh
 npm run typecheck
@@ -21,9 +21,9 @@ npm run build
 npm start
 ```
 
-`WELLIO_API_BASE_URL` 是服务端代理地址，默认 `http://127.0.0.1:8000`。浏览器仍请求同源 `/api/state`、`/api/actions`、`/api/chat`、`/api/attachments`；Cookie、错误码与 JSON 字段保持一致。后端 `WELLIO_PUBLIC_ORIGIN` 必须包含实际前端来源。密钥和 PostgreSQL URL 配置在后端，不能添加 `VITE_` 前缀。
+业务代理 `WELLIO_API_BASE_URL` 默认 `http://127.0.0.1:8000`；Agent 代理 `WELLIO_AGENT_BASE_URL` 默认 `http://127.0.0.1:8001`。浏览器只访问同源 `/api/*`。后端 `WELLIO_PUBLIC_ORIGIN` 包含实际前端来源。模型密钥、Exa 密钥、数据库 URL 和内部服务 token 都在后端配置，不使用 `VITE_` 前缀。
 
-显式加载前端 `.env`：
+需要显式加载前端 `.env` 时：
 
 ```sh
 node --env-file=.env ./node_modules/vite/bin/vite.js --host 127.0.0.1 --port 3100
@@ -31,26 +31,29 @@ node --env-file=.env ./node_modules/vite/bin/vite.js --host 127.0.0.1 --port 310
 node --env-file=.env .output/server/index.mjs
 ```
 
-本机两个仓库并排时可选 `npm run dev:stack` / `npm run start:stack`；要求已配置 `DATABASE_URL`、已安装 `uv`，并存在 `../wellio-backend`，也可设置 `WELLIO_BACKEND_DIR`。它同时启动 FastAPI 和前端，退出时停止本次子进程；PostgreSQL由独立服务提供。
+两个仓库在本机运行时，可用 `npm run dev:stack` / `npm run start:stack` 统一管理三个服务。要求 PostgreSQL 已运行、`DATABASE_URL` 已配置、已安装 `uv`、后端 `agent-runtime` 已构建。后端默认路径 `../wellio-backend`，可用 `WELLIO_BACKEND_DIR` 指定。启动器生成本次内部服务 token，退出时停止自己的子进程，不停止外部 PostgreSQL。
 
-## 当前能力
+不要在运行中的生产 `.output` 上重新构建；测试或新版本先使用独立目录，再整体切换服务，避免页面缓存的静态资源与服务端版本不一致。
 
-FastAPI 原生负责会话、训练进度、提案 Apply、撤销、餐食与条件服务、私有附件和 PostgreSQL 持久化。搜索使用 Exa Python SDK。当前阶段没有接通 CopilotKit；`capabilities.agent=false` 和聊天 `503 PROVIDER_NOT_CONFIGURED` 明确表示 Agent 尚不可用。
+## 对话与业务边界
 
-`src/server` 中除 `api-proxy.ts` 外的旧 TypeScript 领域/Agent 实现保留用于历史行为回归。生产 API 路由只调用 FastAPI 代理，旧 SQLite/Firecrawl 实现不会被这些路由初始化。历史 SDK 单测通过不代表当前 Python Agent 已完成。
+前端通过 CopilotKit React SDK 发现 `wellio` Agent，真实调用 `runAgent`；采用自定义 UI，不依赖 CopilotKit 云账号。Node BuiltInAgent 运行模型和工具循环，FastAPI 验证来源、运行状态、权限、版本与事务，PostgreSQL 保存事实及回执。模型与 Exa 仍需要外网 API。
 
-共享客户端契约在 `src/lib/contracts.ts`。只有已保存的服务端快照更新记录，Markdown 不作为数据库。默认英文，可在 Profile 切换语言。
+`src/server` 仅保留两个同源代理。旧 TypeScript 领域服务、SQLite、Firecrawl 和旧 Agent 实现及对应依赖已移除；历史行为可查 Git 基线。生产没有第二条模型执行路径。
+
+业务动作仍通过 `/api/actions`；生成提案通过 `/api/copilotkit/proposal`，成功候选仍需显式 Apply。对话使用 AG-UI SSE 与已校验的 Wellio 事件，保持会话、请求及 reset epoch 隔离；停止会取消 SDK 并等待本地收尾。最终显示与保存结果来自 FastAPI 快照，Markdown 不能直接记账。
+
+未配置模型时 `capabilities.agent=false`，不生成假回复；业务记录仍可使用。当前知识检索是否开放以服务端实际工具清单为准，不把菜单搜索当专业知识库。
 
 ## 验证
 
 ```sh
-npm test                     # UI 与历史 TypeScript 行为回归
+npm test
 npm run typecheck
-npm run build
-npm run test:e2e              # 需要后端 checkout、uv、本机 PostgreSQL 测试二进制
+npm run test:e2e
 npm run test:backend:production
 ```
 
-Playwright 需要 Chromium：`npx playwright install chromium`，或设置 `PLAYWRIGHT_EXECUTABLE_PATH`。浏览器部分场景通过受控 HTTP 响应验证候选方案和冲突 UI；FastAPI 的真实 PostgreSQL、事务、并发及重启由后端 pytest 与生产烟测验证。
+前端测试覆盖真实 SDK 事件处理、取消、UI 状态和 PostgreSQL 重试回执。数据库测试由后端 pytest 负责，未保留第二套 SQLite 测试后端。测试需要后端 checkout、uv 和本机 PostgreSQL 测试二进制；可配置 `WELLIO_BACKEND_DIR`。浏览器需要 `npx playwright install chromium` 或 `PLAYWRIGHT_EXECUTABLE_PATH`。完整 HTTP Agent 联调命令见后端 README。
 
-`VITE_WELLIO_PREVIEW=1 npm run dev` 仅用于独立视觉预览，不包含数据库、AI、搜索或图片识别；生产忽略该开关。
+`VITE_WELLIO_PREVIEW=1 npm run dev` 仅用于明确的视觉预览，不包含数据库、AI 或搜索；生产忽略该开关。
