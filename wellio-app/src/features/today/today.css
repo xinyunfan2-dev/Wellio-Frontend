@@ -1,0 +1,119 @@
+.today-page{color:#2b3a2b;min-width:0;font-size:16px;line-height:1.45}
+.today-page button,.today-dialog button{font:inherit;cursor:pointer}.today-page button:disabled,.today-dialog button:disabled{cursor:wait;opacity:.6}.today-page button:focus-visible,.today-dialog button:focus-visible,.today-page summary:focus-visible{outline:3px solid #826a49;outline-offset:3px}
+.today-header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:0 18px}.today-header h1{font-size:24px;letter-spacing:-.6px;margin:0;font-weight:650}.today-header>span{font-size:14px;color:#62705c;text-align:right}
+.today-content{display:flex;flex-direction:column;gap:12px;padding:0 16px 24px}.today-loading{padding:24px 18px}.today-skeleton{height:170px;border-radius:24px;background:#e7edd8}
+.today-section-line{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}.today-section-line h2{font-size:18px;font-weight:650;margin:0}.today-section-line>span{font-size:14px;color:#62705c;text-align:right}
+.today-readiness{border-radius:24px;background:#e7edd8;padding:12px 14px 10px}.today-readiness .today-section-line h2{font-size:16px}.today-readiness .today-section-line>span{font-size:13px;white-space:nowrap}
+.today-readiness-stage{display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:10px;align-items:center}.today-gauge-button{position:relative;width:100%;height:132px;background:transparent;border:0;padding:0;color:#2b3a2b}.today-gauge-button>svg{display:block;width:100%;height:123px;overflow:visible}.today-gauge-button svg text{fill:#62705c;font-size:12px}.today-gauge-value{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:17px;pointer-events:none}.today-gauge-value>strong{font-size:37px;font-weight:700;letter-spacing:-1.3px;line-height:1.2}.today-gauge-value strong small{font-size:14px;font-weight:400;letter-spacing:0;margin-left:2px;color:#62705c}.today-gauge-value>span{font-size:14px;font-weight:600;text-align:center;line-height:1.15;max-width:150px}
+.today-pet{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0}.today-pet .wellio-mascot{width:120px;height:114px;object-fit:contain;mix-blend-mode:multiply}.today-pet>span{display:flex;justify-content:center;align-items:center;gap:4px;color:#5c6653;font-size:13px;white-space:normal;text-align:center}.today-pet>span svg{flex:none}.today-readiness-unavailable{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.today-readiness-unavailable p{font-size:14px;margin:8px 0 0;color:#62705c}
+.today-plan{background:#f0f2e6;border-radius:24px;padding:14px 14px 12px;min-width:0}.today-plan-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}.today-plan-heading>div{min-width:0}.today-eyebrow{display:block;color:#62705c;font-size:14px}.today-plan h2{font-size:24px;line-height:1.3;letter-spacing:-.5px;margin:2px 0 6px}.today-plan p{font-size:16px;line-height:1.5;margin:8px 0 10px}.today-gym{display:block;min-height:44px;border:0;background:transparent;color:#2b3a2b;font-size:15px!important;text-align:right;padding:0;white-space:nowrap;flex:none}.today-gym svg{display:inline-block;vertical-align:middle;margin-left:3px}.today-gym>small{display:block;font-size:14px;color:#62705c;font-weight:400}.today-plan .today-reason{font-size:14px;line-height:1.5;margin:5px 0 7px;color:#53624b}.today-reason>strong{font-weight:650;color:#344b32;margin-right:5px}
+.today-exercises{list-style:none;padding:0;margin:0 0 10px}.today-exercises>li{display:flex;align-items:flex-start;gap:10px;padding:9px 0;min-height:56px}.today-exercises>li+li{border-top:1px solid #dce2d1}.today-exercise-number{min-width:23px;font-size:14px;font-variant-numeric:tabular-nums;color:#6b795e;padding-top:2px}.today-exercise-copy{display:grid;gap:2px;min-width:0;flex:1}.today-exercise-copy>strong{font-size:16px;line-height:1.35;font-weight:600;overflow-wrap:anywhere}.today-exercise-copy>span{font-size:14px;line-height:1.45;color:#5c6653}.today-exercise-done .today-exercise-copy>strong{color:#6a795f}.today-change{display:inline-block;padding:1px 5px;margin-left:6px;border-radius:6px;background:#e4dce8;color:#705a7e;font-size:12px;font-weight:500}.today-exercise-details{font-size:14px;color:#62705c}.today-exercise-details>summary{display:inline-flex;align-items:center;min-height:28px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}.today-exercise-details>summary::marker{content:''}.today-exercise-details p{font-size:14px;margin:6px 0}.today-exercise-details[open]{padding-bottom:5px}
+.today-page .today-button,.today-dialog .today-button{display:flex;justify-content:center;align-items:center;gap:12px;width:100%;min-height:48px;border:0;border-radius:15px;padding:11px 14px;font-size:16px;line-height:1.35;font-weight:600;text-align:center}.today-page .today-button-primary,.today-dialog .today-button-primary{background:#344b32;color:#faf9f2}.today-button-primary>svg{margin-left:auto;flex:none}.today-page .today-button-secondary,.today-dialog .today-button-secondary{background:transparent;color:#526447;font-weight:500;min-height:44px;margin-top:4px}.today-button:active{transform:translateY(1px)}.today-link{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:44px;border:0;background:transparent;color:#526447;font-size:14px!important;padding:5px 0;text-align:left}
+.today-exercise-details>summary{display:grid;position:relative;min-height:44px;gap:3px;padding-right:18px;text-decoration:none;align-content:center}.today-exercise-details>summary>strong{color:#2b3a2b;font-size:16px;line-height:1.35;font-weight:600;overflow-wrap:anywhere}.today-exercise-details>summary>span{font-size:14px;line-height:1.45;color:#5c6653}.today-exercise-details>summary>svg{position:absolute;right:0;top:7px}.today-exercise-details[open]>summary>svg{transform:rotate(90deg)}.today-exercise-done summary>strong{color:#6a795f}
+.today-plan h2{font-weight:650}.today-pet>span{max-width:100%}.today-pet>span>span{min-width:0}.today-sleep-duration{white-space:nowrap}
+.today-status{display:inline-block;font-size:14px;line-height:1.5;background:#e5e4d7;color:#635d44;border-radius:7px;padding:3px 7px;margin:4px 0 6px}.today-plan .today-note,.today-note{font-size:14px;line-height:1.5;color:#64715b;margin:8px 0 12px}.today-inline-state{margin:10px 0;padding:10px 12px;background:#e7e8dd;border-radius:14px}.today-inline-state p{font-size:14px}.today-coach{display:flex;align-items:center;gap:6px;color:#667553;font-size:14px}.today-rest h2{font-size:26px;margin-top:8px}.today-date-moves{margin:10px 0}.today-date-moves>div{display:flex;justify-content:space-between;gap:12px;align-items:center;min-height:46px;font-size:16px;border-bottom:1px solid #dce2d1}.today-date-moves>div>span{display:flex;gap:8px;align-items:center;text-align:right}.today-date-moves svg{flex:none}.today-date-moves strong{font-weight:500}.today-date-before{font-size:14px;color:#728067}
+.today-error{background:#f2e9df;border:1px solid #dbc9b4;color:#73513e;border-radius:15px;padding:12px 14px;font-size:14px}.today-error>p{margin:0 0 4px;font-size:14px;line-height:1.5}.today-error summary{cursor:pointer;min-height:32px;display:flex;align-items:center}.today-error code{font-size:12px;overflow-wrap:anywhere}.today-error details>.today-link{display:flex}.today-empty{color:#64715b;font-size:15px;line-height:1.5}
+.today-nutrition{background:#f0f2e6;border-radius:24px;padding:14px}.today-nutrition-data{display:grid;grid-template-columns:112px minmax(0,1fr);gap:12px;align-items:center;margin:10px 0}.today-nutrition-dial{position:relative;width:112px;height:112px}.today-nutrition-dial>svg{width:112px;height:112px;display:block}.today-nutrition-dial>span{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:4px;line-height:1.15}.today-nutrition-dial strong{font-size:23px;letter-spacing:-.8px}.today-nutrition-dial small{font-size:12px;color:#62705c}.today-macros{display:grid;gap:8px;min-width:0}.today-macros>div{display:flex;flex-wrap:wrap;gap:2px 6px;justify-content:space-between;font-size:14px}.today-macros>div>span{display:flex;align-items:center;gap:5px}.today-macros i{width:7px;height:7px;border-radius:50%;flex:none}.today-macros strong{font-size:14px;font-weight:600;white-space:nowrap}.today-macros strong small{font-size:13px;color:#62705c;font-weight:400}.today-over-target{font-size:13px;color:#62705c}.today-remaining{border-top:1px solid #d9dfcb;display:flex;justify-content:space-between;gap:10px;padding-top:9px;font-size:14px}.today-remaining>span{color:#62705c}.today-remaining>strong{white-space:nowrap}
+.today-food .today-section-line{min-height:44px}.today-meal-tiles{display:grid;gap:8px;margin-top:4px;align-items:stretch}.today-meal-card{display:flex;flex-direction:column;justify-content:space-between;gap:4px;min-width:0;min-height:112px;padding:12px!important;border:0;border-radius:19px;background:#eee7d9;color:#2b3a2b;text-align:left}.today-meal-card:nth-child(2n){background:#e6eccf}.today-meal-card>span{display:flex;flex-wrap:wrap;gap:2px 6px;font-size:14px}.today-meal-card small{font-size:13px;font-weight:400;color:#62705c}.today-meal-card>strong{font-size:24px;letter-spacing:-.7px;line-height:1.2;overflow-wrap:anywhere}.today-meal-card>strong>small{letter-spacing:0}.today-meal-card .today-meal-name{font-size:14px;color:#62705c;line-height:1.35;overflow-wrap:anywhere}.today-meal-row{display:grid;grid-template-columns:1fr auto;gap:3px 8px;text-align:left;width:100%;padding:12px 0;border:0;border-bottom:1px solid #d9dfcb;background:transparent;color:#2b3a2b}.today-meal-row>span{font-size:14px}.today-meal-row>span>small{margin-left:6px}.today-meal-row small{font-size:13px;color:#62705c}.today-meal-row>.today-meal-name,.today-meal-row>small{grid-column:1/-1}.today-meal-advice{display:flex;align-items:center;gap:9px;min-height:60px;width:100%;border:0;background:transparent;padding:12px 2px;text-align:left;color:#2b3a2b}.today-meal-advice>span{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.today-meal-advice small{font-size:13px;color:#62705c}.today-meal-advice strong{font-size:14px;font-weight:500;line-height:1.5}.today-meal-advice>svg{flex:none}
+.today-dialog{border:0;border-radius:26px;background:#faf9f2;color:#2b3a2b;width:min(370px,calc(100% - 28px));max-height:calc(100dvh - 44px);padding:24px;font:inherit;font-size:16px;line-height:1.5;box-sizing:border-box;overflow:auto}.today-dialog::backdrop{background:#1d2c2166}.today-dialog h2{font-size:23px;line-height:1.3;margin:8px 34px 16px 0}.today-dialog h3{font-size:18px;margin:18px 0 8px}.today-dialog p{font-size:15px;line-height:1.5}.today-close{position:absolute;right:12px;top:12px;border:0;background:transparent;width:44px;height:44px;color:#344b32;display:grid;place-items:center}.today-facts{margin:0}.today-facts dt{font-size:14px;color:#64715b;margin-top:15px}.today-facts dd{margin:3px 0;font-size:18px}.today-facts dd>small{display:block;font-size:14px;color:#62705c;margin-top:3px}.today-saved-schedule>div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #d9dfcb;font-size:15px}.today-saved-schedule strong{font-weight:550;text-align:right}.today-saved-schedule small{display:block;color:#62705c;font-size:13px;font-weight:400}.today-gym-choice{display:flex;flex-direction:column;gap:5px;text-align:left;width:100%;min-height:70px;border:0;border-radius:14px;background:#e7edd8;color:#2b3a2b;padding:14px;margin:10px 0}.today-gym-choice strong{font-size:17px}.today-gym-choice strong small{font-size:13px;margin-left:8px;color:#62705c;font-weight:500}.today-gym-choice>span{font-size:14px}.today-meal-detail+.today-meal-detail{border-top:1px solid #d9dfcb;padding-top:14px}.today-meal-detail>div{display:flex;flex-direction:column;gap:3px;margin:8px 0}.today-meal-detail>div>span{font-size:14px;color:#62705c}
+@media(max-width:350px){.today-content{padding-left:12px;padding-right:12px}.today-header{padding:0 14px}.today-readiness-stage{grid-template-columns:minmax(0,1fr) 104px;gap:6px}.today-pet .wellio-mascot{width:102px;height:108px}.today-gauge-value>span{max-width:120px}.today-section-line{gap:6px}.today-section-line>span{font-size:13px}.today-plan-heading{gap:6px}.today-plan h2{font-size:22px}.today-plan,.today-readiness{padding-left:12px;padding-right:12px}.today-nutrition-data{gap:8px;grid-template-columns:104px minmax(0,1fr)}.today-nutrition-dial,.today-nutrition-dial>svg{width:104px;height:104px}.today-date-moves>div{font-size:15px}.today-date-moves>div>span{gap:5px}}
+@media(prefers-reduced-motion:reduce){.today-button:active{transform:none}}
+
+/* Today is an overview: normal phone screens show the saved plan and food together.
+   Expanded details, longer plans and enlarged text retain ordinary page scrolling. */
+.today-page{display:flex;flex-direction:column;min-height:100%}
+.today-header{min-height:44px;padding:0 16px;gap:8px;flex:none}
+.today-header h1{font-size:22px}
+.today-header-actions{display:flex;align-items:center;gap:7px;min-width:0}
+.today-date-button,.today-log-button{min-height:44px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;gap:5px;padding:0;color:#62705c}
+.today-date-button{font-size:12px!important;white-space:nowrap}
+.today-log-button{width:44px;flex:none;color:#344b32;border-radius:14px}
+.today-log-button:hover{background:#e7edd8}
+.today-content{gap:8px;padding:0 16px 8px;flex:1}
+.today-content>*,.today-fuel{flex-shrink:0}
+.today-readiness{padding:8px 12px 6px;border-radius:22px;display:flex;flex-direction:column;flex-grow:.6}
+.today-readiness .today-section-line h2{font-size:14px;line-height:20px}
+.today-readiness .today-section-line>span{font-size:11px}
+.today-readiness-stage{grid-template-columns:minmax(0,1fr) 128px;gap:8px;flex:1}
+.today-gauge-button{height:128px}
+.today-gauge-button>svg{height:124px}
+.today-gauge-value{padding-bottom:12px}
+.today-gauge-value>strong{font-size:34px}
+.today-gauge-value>span{font-size:13px;max-width:158px}
+.today-pet{gap:0}
+.today-pet .wellio-mascot{width:128px;height:112px}
+.today-pet>span{font-size:12px;line-height:16px}
+.today-plan{padding:10px 12px;border-radius:22px}
+.today-plan:not(.today-rest){display:flex;flex-direction:column;flex-grow:1}
+.today-plan-heading{gap:8px;margin-bottom:4px;align-items:center}
+.today-plan-heading h2{min-width:0;flex:1;margin:0;line-height:1.2}
+.today-plan-heading .today-gym{text-align:left;width:100%;white-space:normal;min-height:44px}
+.today-gym>span{display:block;font-size:21px;font-weight:650;line-height:1.2;letter-spacing:-.4px;overflow-wrap:anywhere}
+.today-gym>small{font-size:12px;line-height:18px;margin-top:2px;font-weight:400;letter-spacing:0}
+.today-plan-main-action{width:112px;flex:none}
+.today-plan-main-action .today-button{min-height:44px;padding:7px 9px;font-size:13px;line-height:16px;border-radius:13px}
+.today-plan-main-action .today-button>svg{display:none}
+.today-eyebrow{font-size:12px;line-height:16px;margin-bottom:3px}
+.today-exercises{margin:0;display:flex;flex-direction:column;flex:1}
+.today-exercises>li{padding:0;min-height:44px;gap:7px;flex:1;align-items:center}
+.today-exercise-copy{display:flex;flex-direction:column}
+.today-exercise-number{min-width:20px;font-size:12px;padding-top:0}
+.today-exercise-details>summary{min-height:44px;padding:3px 17px 3px 0;gap:1px}
+.today-exercise-details>summary>strong{font-size:15px;line-height:20px}
+.today-exercise-details>summary>span{font-size:12px;line-height:16px}
+.today-exercise-details>summary>svg{top:13px}
+.today-plan .today-inline-state{margin:4px 0 6px;padding:6px 8px;border-radius:10px}
+.today-plan .today-inline-state p{margin:0;font-size:12px;line-height:16px}
+.today-plan .today-reason{font-size:13px;line-height:18px;margin:4px 0}
+.today-fuel{min-width:0;background:#f0f2e6;border-radius:22px;padding:10px 12px}
+.today-nutrition{padding:0;background:transparent;border-radius:0;display:grid;grid-template-columns:92px minmax(0,1fr);column-gap:10px;align-items:center}
+.today-nutrition>.today-section-line{grid-column:1/-1;margin-bottom:4px;gap:6px}
+.today-nutrition .today-section-line h2{font-size:16px;line-height:21px}
+.today-nutrition .today-section-line>span{font-size:12px}
+.today-nutrition-data{display:contents}
+.today-nutrition-dial{grid-column:1;grid-row:2/4}
+.today-nutrition-dial,.today-nutrition-dial>svg{width:92px;height:92px}
+.today-nutrition-dial strong{font-size:20px;letter-spacing:-.7px}
+.today-nutrition-dial small{font-size:11px}
+.today-macros{grid-column:2;grid-row:2;gap:3px}
+.today-macros>div,.today-macros strong{font-size:13px;line-height:18px}
+.today-macros strong small{font-size:12px}
+.today-remaining{grid-column:2;grid-row:3;font-size:12px;line-height:17px;gap:6px;padding-top:3px}
+.today-food{min-width:0;margin-top:6px}
+.today-meal-tiles{margin:0;gap:7px}
+.today-meal-card{min-height:68px;padding:8px 10px!important;border-radius:15px;gap:2px}
+.today-meal-card>span{font-size:12px;line-height:16px}
+.today-meal-card>span:first-child>small{display:none}
+.today-meal-card>strong{font-size:19px;line-height:22px}
+.today-meal-card small{font-size:11px}
+.today-meal-card .today-meal-name{display:block;font-size:12px;line-height:16px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.today-meal-row{padding:5px 0;min-height:44px}
+.today-meal-advice{min-height:44px;padding:5px 0;gap:6px}
+.today-meal-advice small{font-size:11px}
+.today-meal-advice strong{font-size:12px;line-height:16px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden}
+.today-food>.today-note{font-size:12px;line-height:16px;margin:5px 0 0}
+@media(max-height:820px){
+ .today-content{gap:6px;padding-bottom:6px}
+ .today-readiness{padding-top:4px;padding-bottom:2px}
+ .today-gauge-button{height:112px}.today-gauge-button>svg{height:96px}
+ .today-gauge-value{padding-bottom:3px;gap:8px}.today-gauge-value>strong{font-size:30px}
+ .today-pet .wellio-mascot{width:112px;height:96px}
+ .today-plan{padding-top:7px;padding-bottom:7px}
+ .today-fuel{padding-top:8px;padding-bottom:8px}
+ .today-nutrition{grid-template-columns:84px minmax(0,1fr)}
+ .today-nutrition-dial,.today-nutrition-dial>svg{width:84px;height:84px}
+ .today-nutrition-dial strong{font-size:18px}
+ .today-meal-card{min-height:64px;padding-top:6px!important;padding-bottom:6px!important}
+ .today-food{margin-top:4px}
+}
+@media(max-width:350px){
+ .today-header{padding:0 12px}.today-content{padding-left:12px;padding-right:12px}
+ .today-header-actions{gap:2px}.today-date-button{font-size:11px!important}
+ .today-readiness-stage{grid-template-columns:minmax(0,1fr) 108px;gap:4px}
+ .today-readiness .today-section-line>span{display:none}
+ .today-gym>span{font-size:19px}.today-plan-main-action{width:100px}
+ .today-nutrition .today-section-line h2{font-size:15px}
+ .today-nutrition .today-section-line>span{font-size:11px}
+ .today-macros>div,.today-macros strong{font-size:12px}
+ .today-macros strong small{font-size:11px}
+}
