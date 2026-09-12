@@ -12,9 +12,13 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:backend": "vitest run tests/backend",
-    "test:backend:production": "node tests/backend/production-smoke.mjs",
+    "test:backend:production": "node scripts/backend-check.mjs production",
     "test:e2e": "playwright test",
-    "start": "node .output/server/index.mjs"
+    "start": "node .output/server/index.mjs",
+    "test:python": "uv run --frozen --project ../wellio-backend pytest ../wellio-backend/tests",
+    "export:python-seed": "node scripts/export-python-seed.mjs",
+    "dev:stack": "node scripts/run-stack.mjs dev",
+    "start:stack": "node scripts/run-stack.mjs start"
   },
   "dependencies": {
     "@ai-sdk/openai": "4.0.66",
