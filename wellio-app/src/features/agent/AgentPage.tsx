@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { memo, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -74,12 +74,12 @@ export function AgentToolProcess({ steps }: { steps: ToolStep[] }) {
   </details>
 }
 
-export function AgentMessageBody({ content }: { content: string }) {
+export const AgentMessageBody = memo(function AgentMessageBody({ content }: { content: string }) {
   return <div className="agent-markdown"><ReactMarkdown remarkPlugins={[remarkGfm]} components={{
     a: ({ children, href }) => <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>,
     table: ({ children }) => <div className="agent-table-scroll" tabIndex={0}><table>{children}</table></div>,
   }}>{content}</ReactMarkdown></div>
-}
+})
 
 function isProposalCurrent(proposal: Proposal, snapshot: Snapshot) {
   const expected = proposal.expected
@@ -92,7 +92,7 @@ function isProposalCurrent(proposal: Proposal, snapshot: Snapshot) {
 }
 
 interface LocalAttachment { file: File; previewUrl: string; purpose: Attachment['purpose']; uploaded?: Attachment }
-interface Feedback { kind: 'success' | 'error' | 'info'; content: LocalizedText }
+interface Feedback { kind: 'success' | 'error' | 'info'; content: LocalizedText; code?: string }
 
 export function AgentPage() {
   const { snapshot, loading, error, busy, chatBusy, readinessBusy, readinessError, checkReadiness, draft, setDraft, chatTarget, setChatTarget, runAction, sendMessage, stopChat, refresh } = useWellio()
@@ -115,6 +115,7 @@ export function AgentPage() {
   const [composerNotice, setComposerNotice] = useState<Feedback | null>(null)
   const messages = snapshot?.messages ?? []
   const lastMessage = messages.at(-1)
+  const hasMessageFailure = lastMessage?.role === 'assistant' && ['failed', 'stopped'].includes(lastMessage.status)
   const active = chatBusy || sending || uploading
   const locked = busy || active || pendingAction !== null
 
@@ -221,7 +222,7 @@ export function AgentPage() {
       }
     } catch (cause) {
       if (epoch === currentEpoch.current && !(cause instanceof Error && cause.name === 'AbortError')) {
-        setComposerNotice({ kind: 'error', content: errorCopy(codeFromError(cause), bilingual) })
+        setComposerNotice({ kind: 'error', code: codeFromError(cause), content: errorCopy(codeFromError(cause), bilingual) })
       }
     } finally { setUploading(false); setSending(false) }
   }
@@ -270,7 +271,7 @@ export function AgentPage() {
     }}>
       {snapshot && <div className="agent-day">{date(snapshot.dayKey, { month: 'long', day: 'numeric' })}</div>}
       {loading && !snapshot && <p className="agent-empty" role="status">{t('Loading your conversation…', '正在加载对话…')}</p>}
-      {error && <div className="agent-feedback agent-feedback-error" role="alert"><p>{errorCopy(typeof error === 'string' ? error : undefined, t)}</p><button className="agent-button agent-button-text" onClick={() => void refresh()}>{t('Refresh', '刷新')}</button></div>}
+      {error && !(hasMessageFailure && error === lastMessage?.errorCode) && <div className="agent-feedback agent-feedback-error" role="alert"><p>{errorCopy(typeof error === 'string' ? error : undefined, t)}</p><button className="agent-button agent-button-text" onClick={() => void refresh()}>{t('Refresh', '刷新')}</button></div>}
       {readinessError && <div className="agent-feedback agent-feedback-error" role="alert"><p>{errorCopy(readinessError, t)}</p><button type="button" className="agent-button agent-button-text" disabled={locked || readinessBusy} onClick={() => void checkReadiness({ mode: 'retry' }).catch(() => {})}>{t('Retry recovery check', '重试恢复检查')}</button></div>}
       {(readinessBusy || snapshot?.readinessCheck?.status === 'pending') && !readinessError && <p className="agent-status" role="status">{t('Recovery check in progress…', '正在检查恢复情况…')}{readinessBusy ? <button type="button" className="agent-button agent-button-text" onClick={stopChat}>{t('Stop check', '停止检查')}</button> : <button type="button" className="agent-button agent-button-text" onClick={() => void refresh()}>{t('Refresh', '刷新')}</button>}</p>}
       {!loading && !messages.length && <div className="agent-empty"><p>{t('Log a meal, or tell me what has changed today.', '记录一餐，或告诉我今天有什么变化。')}</p></div>}
@@ -308,7 +309,7 @@ export function AgentPage() {
         </select></label></div>
         <button type="button" className="agent-icon-button" disabled={active} aria-label={t('Remove image', '移除图片')} onClick={() => setAttachment(null)}><Icon name="x" size={18} /></button>
       </div>}
-      {composerNotice && <p className={`agent-feedback agent-feedback-${composerNotice.kind}`} role={composerNotice.kind === 'error' ? 'alert' : 'status'}>{text(composerNotice.content)}</p>}
+      {composerNotice && !(hasMessageFailure && composerNotice.code && composerNotice.code === lastMessage?.errorCode) && <p className={`agent-feedback agent-feedback-${composerNotice.kind}`} role={composerNotice.kind === 'error' ? 'alert' : 'status'}>{text(composerNotice.content)}</p>}
       <textarea ref={composerRef} rows={1} value={draft} readOnly={active} onChange={event => setDraft(event.target.value)} onFocus={() => setComposing(true)} onBlur={() => setComposing(false)} aria-label={t('Message Wellio', '给 Wellio 的消息')} placeholder={t('Tell me what’s changed…', '说说今天的变化…')} onKeyDown={event => {
         if (event.key === 'Enter' && !event.shiftKey && (event.metaKey || event.ctrlKey) && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit() }
       }} />
