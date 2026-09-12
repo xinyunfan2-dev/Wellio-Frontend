@@ -155,7 +155,7 @@ let backend: ReturnType<typeof createBackend> | undefined
 export async function handleBackendRequest(request: Request): Promise<Response> {
   try {
     backend ??= createBackend({
-      databasePath: process.env.WELLIO_DATABASE_PATH || resolve(process.cwd(), '.data', 'wellio.sqlite'),
+      databasePath: process.env.WELLIO_DATABASE_PATH || (process.env.VERCEL ? resolve('/tmp', 'wellio.sqlite') : resolve(process.cwd(), '.data', 'wellio.sqlite')),
       cookieSecure: process.env.WELLIO_COOKIE_SECURE === undefined ? undefined : process.env.WELLIO_COOKIE_SECURE === '1',
       agent: loadAgentConfiguration(),
       menuSearch: loadMenuConfiguration(),
